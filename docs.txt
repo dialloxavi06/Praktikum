@@ -1,0 +1,45 @@
+------------------------------------------------- produkts.parquet--------------------------------------
+'id': unique identifier for the product
+'base_product_id': identifier of the base product
+'category': category of the product
+'name': name of the product
+'price': price of the product
+'popularity': popularity score of the product
+'valid_from': start date of validity
+'valid_to': end date of validity
+'sold_by_weight': boolean indicating if the product is sold by weight
+'weight': weight of the product
+'age_restricted': boolean indicating if the product is age restricted
+'is_scannable': boolean indicating if the product is scannable
+----------------------------------------------------------------------------------------------stores.parquet---------------------------------------
+
+'id': unique identifier for the store
+'opening_date': date when the store opened
+'location': location of the store
+'state': state where the store is located
+'urbanization': urbanization level of the store's area
+'sco_introduction': date of SCO introduction
+------------------------------------------------------------------------------------transactions.parquet---------------------------------------------------------------
+
+'id': unique identifier for the transaction line
+'store_id': identifier of the store
+'cash_desk': cash desk identifier
+'transaction_start': start timestamp of the transaction
+'transaction_end': end timestamp of the transaction
+'total_amount': total amount of the transaction
+'n_lines': number of lines in the transaction
+'payment_medium': payment method used
+'customer_feedback': customer feedback
+'damage': damage indicator
+'label': label for the transaction
+----------------------------------------------------------------------------------transaction_lines.parquet-----------------------------------------------------
+
+'id': unique identifier for the transaction line
+'transaction_id': identifier of the transaction
+'product_id': identifier of the product
+'timestamp': timestamp of the line item
+'pieces_or_weight': number of pieces or weight sold
+'sales_price': price at which the item was sold
+'was_voided': indicator if the line was voided
+'camera_product_similar': indicator if camera suggests similar product
+'camera_certainty': camera certainty score

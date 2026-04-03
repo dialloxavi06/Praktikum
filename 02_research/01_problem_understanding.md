@@ -48,3 +48,8 @@ Für die Bearbeitung des Projekts werden folgende Annahmen getroffen:
 - In den Daten existieren Muster, die auf fehlerhafte oder betrügerische Scans hinweisen.
 - Diese Muster können mithilfe von Data-Science-Methoden erkannt werden.
 - Die bereitgestellten Daten sind repräsentativ für reale Nutzungsszenarien.
+
+## 7. Zentrale Fragestellung
+
+Die zentralle Fragestellung des Projekts lautet:
+Wie können verdächtige Scanvorgänge zuverlässig erkannt werden, ohne die Anzahl unnötiger kontrollen zu erhöhen ?

@@ -1,13 +1,13 @@
-## Ausgangslage: Daten und Domäne
+# Ausgangslage: Daten und Domäne
 
-### 1. Domäne
+## 1. Domäne
 
-#### 1.1 Kontext
+### 1.1 Kontext
 
 Das Projekt beschäftigt sich mit dem Einsatz von Self-Checkout-Kassen im Lebensmitteleinzelhandel.  
 Kundinnen und Kunden scannen ihre Produkte eigenständig, ohne direkte Kontrolle durch das Personal.
 
-#### 1.2 Problembeschreibung (überarbeitet)
+### 1.2 Problembeschreibung
 
 Im Kontext von Self-Checkout-Kassen im Lebensmitteleinzelhandel tritt das Problem auf, dass nicht alle Waren von den Kundinnen und Kunden korrekt erfasst werden.
 
@@ -15,12 +15,12 @@ Die Ursachen hierfür sind vielfältig und reichen von absichtlichem Betrug übe
 
 Um diesen Verlusten entgegenzuwirken, sollen gezielte Nachkontrollen bei verdächtigen Transaktionen durchgeführt werden. Dabei besteht die Herausforderung darin, die Anzahl der Kontrollen möglichst gering zu halten, um zusätzliche Kosten sowie negative Auswirkungen auf die Kundenzufriedenheit zu vermeiden, während gleichzeitig möglichst viele fehlerhafte Scans erkannt werden sollen.
 
-#### 1.3 Ziel des Projekts
+### 1.3 Ziel des Projekts
 
 Ziel des Projekts ist es, ein datengetriebenes System zu entwickeln, das verdächtige Transaktionen identifizieren kann.  
 Auf dieser Grundlage sollen gezielte Kontrollen durchgeführt werden, um fehlerhafte oder betrügerische Scans zu erkennen.
 
-#### 1.4 Wirtschaftliche und praktische Herausforderungen
+### 1.4 Wirtschaftliche und praktische Herausforderungen
 
 Eine zentrale Herausforderung besteht darin, ein Gleichgewicht zwischen zwei gegensätzlichen Zielen zu finden:
 
@@ -29,9 +29,9 @@ Eine zentrale Herausforderung besteht darin, ein Gleichgewicht zwischen zwei geg
 
 Darüber hinaus müssen sowohl wirtschaftliche als auch praktische Rahmenbedingungen der Domäne berücksichtigt werden, da diese alle Phasen des Projekts beeinflussen.
 
-### 2. Daten
+## 2. Daten
 
-#### 2.1 Verfügbare Datenquellen
+### 2.1 Verfügbare Datenquellen
 
 Für das Projekt stehen verschiedene Datenquellen zur Verfügung, die zur Analyse von Scanvorgängen an Self-Checkout-Kassen genutzt werden können.
 
@@ -43,7 +43,7 @@ Die Trainingsdaten stammen aus Stichprobenkontrollen in verschiedenen Filialen a
 
 Die Bereitstellung und Nutzung der Daten erfolgt voraussichtlich über eine REST-API, wodurch eine standardisierte und flexible Anbindung an die entwickelten Analyseverfahren ermöglicht wird.
 
-#### 2.2 Mögliche Datenstruktur
+### 2.2 Mögliche Datenstruktur
 
 Die bereitgestellten Daten lassen sich in mehrere miteinander verknüpfte Tabellen unterteilen, die unterschiedliche Aspekte des Einkaufsprozesses abbilden.
 
@@ -57,7 +57,7 @@ Die Tabelle „transaction_lines“ stellt die detaillierteste Ebene dar und ent
 
 Die verschiedenen Tabellen können über Schlüsselattribute miteinander verknüpft werden, insbesondere über „transaction_id“, „product_id“ und „store_id“. Dadurch ist es möglich, den gesamten Ablauf eines Einkaufs von der Filiale über die Transaktion bis hin zu einzelnen Produkten nachzuvollziehen.
 
-#### 2.3 Erwartete Datenprobleme
+### 2.3 Erwartete Datenprobleme
 
 Im Rahmen der Datenanalyse sind verschiedene Herausforderungen zu erwarten.
 
@@ -71,4 +71,4 @@ Darüber hinaus kann das Verhalten der Kundinnen und Kunden stark variieren, was
 
 Schließlich ist auch zu berücksichtigen, dass bestimmte Variablen, wie beispielsweise Kameradaten, Unsicherheiten enthalten können, die sich auf die Qualität der Analyse auswirken.
 
-#### 2.4 Trainings- und Testdaten
+### 2.4 Trainings- und Testdaten

@@ -2,9 +2,11 @@
 
 ## 1. Domäne (Kurzfassung)
 
-Im Lebensmitteleinzelhandel werden immer häufiger Self-Checkout-Kassen eingesetzt. Dabei scannen Kundinnen und Kunden ihre Produkte selbst, ohne dass direkt Personal eingreift. Das macht den Einkauf zwar schneller und bequemer, bringt aber auch ein Problem mit sich: Es kommt vor, dass Artikel falsch oder gar nicht gescannt werden – entweder aus Versehen oder absichtlich.
+Im Lebensmitteleinzelhandel werden immer häufiger Self-Checkout-Kassen eingesetzt. Dabei scannen Kundinnen und Kunden ihre Produkte selbst, ohne dass direkt Personal eingreift. Das macht den Einkauf schneller und bequemer, bringt aber auch Probleme mit sich: Manche Artikel werden falsch oder gar nicht gescannt – entweder aus Versehen oder absichtlich.
 
-Dadurch entsteht ein Zielkonflikt. Auf der einen Seite möchte man möglichst viele dieser Fehler oder Betrugsfälle erkennen. Auf der anderen Seite sollen die Kundinnen und Kunden aber nicht durch zu viele Kontrollen gestört werden. Ziel des Projekts ist es deshalb, mithilfe von Daten gezielt zu entscheiden, welche Transaktionen überprüft werden sollten, um die Kontrollen effizienter zu machen.
+Dadurch entsteht ein Zielkonflikt. Einerseits möchte man möglichst viele Fehler und Betrugsfälle erkennen. Andererseits sollen die Kundinnen und Kunden nicht durch zu viele Kontrollen gestört werden. Ziel des Projekts ist es deshalb, mithilfe von Daten gezielt zu entscheiden, welche Transaktionen überprüft werden sollten, um die Kontrollen effizienter zu machen.
+
+---
 
 ## 2. Daten — wichtige Erkenntnisse
 
@@ -12,60 +14,110 @@ Dadurch entsteht ein Zielkonflikt. Auf der einen Seite möchte man möglichst vi
 
 Für die Analyse stehen mehrere Tabellen zur Verfügung, die unterschiedliche Aspekte der Daten abdecken:
 
-- `products`: enthält Informationen zu den Produkten, z. B. Preis, Kategorie oder Gewicht.
-- `stores`: enthält Informationen zu den Filialen.
-- `transactions`: beschreibt die einzelnen Einkäufe (z. B. Gesamtbetrag, Anzahl der Produkte, Zeitpunkt, Label).
-- `transaction_lines`: enthält die einzelnen Positionen innerhalb einer Transaktion.
+- `products`: Informationen zu Produkten (z. B. Preis, Kategorie, Gewicht)  
+- `stores`: Informationen zu den Filialen  
+- `transactions`: beschreibt einzelne Einkäufe (z. B. Gesamtbetrag, Anzahl Produkte, Zeit, Label)  
+- `transaction_lines`: einzelne Positionen innerhalb einer Transaktion  
 
-Die Daten werden als Parquet-Dateien bereitgestellt und im Notebook/analytisch über DuckDB betrachtet.
+Die Daten liegen als Parquet-Dateien vor und wurden im Notebook mit DuckDB analysiert.
+
+---
 
 ### 2.2 Kennzahlen aus der Voranalyse
 
-In der ersten Analyse konnten einige wichtige Kennzahlen festgestellt werden:
+Die erste Analyse zeigt folgende Größenordnungen:
 
-- ca. 1,86 Millionen Transaktionen
-- ca. 20 Millionen einzelne Positionen (transaction_lines).
-- rund 23.900 Produkte.
-- Daten aus 50 Filialen.
+- Gesamtanzahl Transaktionen: 1.864.116  
+- Gesamtanzahl `transaction_lines`: 20.092.938  
+- Anzahl Produkte: 23.896  
+- Anzahl Filialen: 50  
 
-Außerdem sind ein paar Probleme in den Daten aufgefallen:
+Zusätzlich sind einige Auffälligkeiten in den Daten zu sehen:
 
-- Es gibt über 11.000 Einträge ohne product_id.
-- Manche Kombinationen aus transaction_id und product_id kommen mehrfach vor.
-- Die Labels sind sehr ungleich verteilt:
+- Fehlende `product_id` in `transaction_lines`: 11.453 (~0,06 %)  
+- Duplikate für (`transaction_id`, `product_id`) treten auf (mehrfache Positionseinträge)  
+- Labelverteilung (`transactions.label`):  
+  - `1` (Betrug): 7.726 (≈ 0,41 %)  
+  - `0` (kein Betrug): 178.359 (≈ 9,57 %)  
+  - `-1` (unbekannt): 1.678.031 (≈ 90,02 %)  
 
-    . nur ca. 7.700 Betrugsfälle (1)
-    . ca. 178.000 normale Fälle (0)
-    . sehr viele unbekannte Fäalle(-1)
-Das zeigt, dass wir ein starkes Klassenungleichgewicht haben, was später beim Modell wichtig wird.
+Diese Verteilung zeigt ein starkes Klassenungleichgewicht, da Betrugsfälle nur einen sehr kleinen Anteil ausmachen.
 
-### 2.3 Hauptrisiken und Datenvorbereitung
+---
 
-Bei der Arbeit mit den Daten sind mehrere Herausforderungen zu beachten:
+### 2.3 Hauptrisiken und erste Überlegungen
 
-- Klassenungleichgewicht: Betrug kommt relativ selten vor, deshalb müssen passende Metriken gewählt werden (z. B. Recall oder Precision).
-- Fehlende `product_id`: Hier muss geprüft werden, warum diese fehlen und ob man sie ersetzen oder entfernen sollte.
-- Duplikate: Mehrfache Einträge müssen sinnvoll zusammengefasst werden
-- Zeitliche und filialspezifische Unterschiede: Daten können sich je nach Zeitraum oder Filiale unterscheiden.
-- Kameradaten: Diese könnten zusätzliche Informationen liefern, müssen aber erst auf Qualität geprüft werden.
+Bei der Arbeit mit den Daten sind einige Herausforderungen zu beachten:
 
-### 2.4 Vorgehensweise für Vorbereitung, Training und Evaluation
+- **Ungleich verteilte Labels:**  
+  Betrug kommt selten vor. Ein Modell könnte daher dazu tendieren, fast nur normale Fälle vorherzusagen.  
+  → Deshalb sollten geeignete Bewertungsmetriken gewählt werden (z. B. Precision oder Recall).
 
-Für die weitere Arbeit planen wir folgendes Vorgehen:
+- **Fehlende `product_id`:**  
+  Ohne Produktinformationen fehlen wichtige Details.  
+  → Es muss geprüft werden, ob diese Werte ersetzt, markiert oder entfernt werden.
 
-- Datenbereinigung: fehlerhafte oder unvollständige Daten behandeln (z. B. fehlende IDs oder Duplikate)
+- **Duplikate:**  
+  Mehrfache Einträge können aggregierte Werte verfälschen.  
+  → Vor der weiteren Analyse sollten diese sinnvoll zusammengefasst werden.
 
-- Aggregation: statt einzelner Zeilen werden Merkmale auf Transaktionsebene gebildet (z. B. Gesamtpreis, Anzahl Produkte)
+- **Zeitliche und filialspezifische Unterschiede:**  
+  Daten können sich je nach Filiale oder Zeitraum unterscheiden.  
+  → Das sollte bei der späteren Analyse berücksichtigt werden.
 
-- Feature Engineering: zusätzliche Merkmale erstellen, z. B. Zeit, Filiale oder Produktkategorien
+- **Kameradaten:**  
+  Zusätzliche Informationen sind vorhanden, aber deren Qualität ist noch unklar.  
+  → Nutzung erst nach Prüfung sinnvoll.
 
-- Umgang mit Labels:
-    1 = Betrug
-    0 = kein Betrug
-    -1 = unbekannt (wird entweder entfernt oder separat genutzt)
+---
 
-- Validierung: Aufteilung der Daten nach Zeit (Training auf älteren Daten, Test auf neueren Daten), um realistische Ergebnisse zu bekommen.
+### 2.4 Vorgehensweise (erste Planung)
 
-- Evaluation: Bewertung mit geeigneten Metriken wie Recall, Precision@k oder AUPRC, je nach Ziel.
+Für die nächsten Schritte planen wir ein einfaches und schrittweises Vorgehen:
 
-# Risiken und Einschränkungen, getroffene Annahmen:
+1. **Erste Datenprüfung**  
+   - Überblick über Datenmengen und Struktur  
+   - Auffälligkeiten identifizieren (fehlende Werte, Duplikate)
+
+2. **Datenbereinigung**  
+   - Umgang mit fehlenden `product_id` klären  
+   - Duplikate bereinigen oder zusammenfassen  
+
+3. **Aggregation auf Transaktionsebene**  
+   - Bildung einfacher Kennzahlen wie:  
+     - Anzahl Produkte  
+     - Gesamtbetrag  
+     - Durchschnittspreis  
+
+4. **Erste Feature-Ideen**  
+   - Zeitliche Merkmale (z. B. Tageszeit, Wochentag)  
+   - Filialbezogene Merkmale  
+   - Einfache Verhaltensindikatoren (z. B. stornierte Produkte)
+
+5. **Vorbereitung der späteren Analyse**  
+   - Aufteilung der Daten nach Zeit (ältere Daten vs. neuere Daten)  
+   - Auswahl geeigneter Bewertungsmetriken  
+
+---
+
+### Erste, konkrete To-Dos
+
+- Analyse der 11.453 Zeilen ohne `product_id` (z. B. nach Filiale oder Zeitraum)  
+- Bestimmung der Anzahl betroffener Transaktionen durch Duplikate  
+- Aufbau einer ersten aggregierten Tabelle auf Transaktionsebene  
+- Erste einfache Kennzahlen pro Filiale berechnen  
+
+---
+
+## 3. Problemeskizze
+
+Ziel des Projekts ist es, ein datengetriebenes Modell zu entwickeln, das dabei hilft zu entscheiden, welche Transaktionen an Self-Checkout-Kassen kontrolliert werden sollten.
+
+Für jede Transaktion soll geschätzt werden, wie wahrscheinlich ein fehlerhafter oder betrügerischer Scanvorgang ist. Auf dieser Basis können gezielt nur die auffälligsten Transaktionen überprüft werden.
+
+Dabei sollen zwei Ziele gleichzeitig erreicht werden:
+
+- möglichst viele Betrugsfälle erkennen  
+- gleichzeitig die Anzahl der Kontrollen gering halten  
+
+Aus technischer Sicht handelt es sich um ein Klassifikationsproblem mit stark unausgeglichenen Klassen.

@@ -15,15 +15,13 @@
 
 **Ausgangslage: Daten und Domäne**
 
-- Quellen: `products`, `stores`, `transactions`, `transaction_lines` (Parquet / DuckDB / ggf. REST API).
-- Beobachtete Kennzahlen (Voranalysen):
   - ~1.86 Mio. Transaktionen
   - ~20.09 Mio. transaction_lines
   - ~23.9k Produkte
   - 50 Filialen
   - 11.453 transaction_lines ohne `product_id`
   - Duplikate von (`transaction_id`, `product_id`) vorhanden
-  - Labelverteilung (`fraud_flag`): `1` ≈ 7.726, `0` ≈ 178.359, `-1` ≈ 1.678.031 (stark unausgewogen)
+ Labelverteilung (`label`): `1` ≈ 7.726, `0` ≈ 178.359, `-1` ≈ 1.678.031 (stark unausgewogen)
 
 **Problemstellung & Ziele**
 

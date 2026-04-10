@@ -1,74 +1,71 @@
 # Ausgangslage: Daten und Domäne
 
-## 1. Domäne
+## 1. Domäne (Kurzfassung)
 
-### 1.1 Kontext
+Im Lebensmitteleinzelhandel werden immer häufiger Self-Checkout-Kassen eingesetzt. Dabei scannen Kundinnen und Kunden ihre Produkte selbst, ohne dass direkt Personal eingreift. Das macht den Einkauf zwar schneller und bequemer, bringt aber auch ein Problem mit sich: Es kommt vor, dass Artikel falsch oder gar nicht gescannt werden – entweder aus Versehen oder absichtlich.
 
-Das Projekt beschäftigt sich mit dem Einsatz von Self-Checkout-Kassen im Lebensmitteleinzelhandel.  
-Kundinnen und Kunden scannen ihre Produkte eigenständig, ohne direkte Kontrolle durch das Personal.
+Dadurch entsteht ein Zielkonflikt. Auf der einen Seite möchte man möglichst viele dieser Fehler oder Betrugsfälle erkennen. Auf der anderen Seite sollen die Kundinnen und Kunden aber nicht durch zu viele Kontrollen gestört werden. Ziel des Projekts ist es deshalb, mithilfe von Daten gezielt zu entscheiden, welche Transaktionen überprüft werden sollten, um die Kontrollen effizienter zu machen.
 
-### 1.2 Problembeschreibung
+## 2. Daten — wichtige Erkenntnisse
 
-Im Kontext von Self-Checkout-Kassen im Lebensmitteleinzelhandel tritt das Problem auf, dass nicht alle Waren von den Kundinnen und Kunden korrekt erfasst werden.
+### 2.1 Verfügbare Tabellen und Formate
 
-Die Ursachen hierfür sind vielfältig und reichen von absichtlichem Betrug über unbeabsichtigte Fehler bis hin zu technischen Problemen. Empirische Untersuchungen zeigen, dass etwa 5 % der Scanvorgänge inkorrekt sind.
+Für die Analyse stehen mehrere Tabellen zur Verfügung, die unterschiedliche Aspekte der Daten abdecken:
 
-Um diesen Verlusten entgegenzuwirken, sollen gezielte Nachkontrollen bei verdächtigen Transaktionen durchgeführt werden. Dabei besteht die Herausforderung darin, die Anzahl der Kontrollen möglichst gering zu halten, um zusätzliche Kosten sowie negative Auswirkungen auf die Kundenzufriedenheit zu vermeiden, während gleichzeitig möglichst viele fehlerhafte Scans erkannt werden sollen.
+- `products`: enthält Informationen zu den Produkten, z. B. Preis, Kategorie oder Gewicht.
+- `stores`: enthält Informationen zu den Filialen.
+- `transactions`: beschreibt die einzelnen Einkäufe (z. B. Gesamtbetrag, Anzahl der Produkte, Zeitpunkt, Label).
+- `transaction_lines`: enthält die einzelnen Positionen innerhalb einer Transaktion.
 
-### 1.3 Ziel des Projekts
+Die Daten werden als Parquet-Dateien bereitgestellt und im Notebook/analytisch über DuckDB betrachtet.
 
-Ziel des Projekts ist es, ein datengetriebenes System zu entwickeln, das verdächtige Transaktionen identifizieren kann.  
-Auf dieser Grundlage sollen gezielte Kontrollen durchgeführt werden, um fehlerhafte oder betrügerische Scans zu erkennen.
+### 2.2 Kennzahlen aus der Voranalyse
 
-### 1.4 Wirtschaftliche und praktische Herausforderungen
+In der ersten Analyse konnten einige wichtige Kennzahlen festgestellt werden:
 
-Eine zentrale Herausforderung besteht darin, ein Gleichgewicht zwischen zwei gegensätzlichen Zielen zu finden:
+- ca. 1,86 Millionen Transaktionen
+- ca. 20 Millionen einzelne Positionen (transaction_lines).
+- rund 23.900 Produkte.
+- Daten aus 50 Filialen.
 
-- Einerseits sollen möglichst viele fehlerhafte Scans erkannt werden.  
-- Andererseits sollen unnötige Kontrollen vermieden werden, um Kosten zu reduzieren und die Kundenzufriedenheit nicht zu beeinträchtigen.  
+Außerdem sind ein paar Probleme in den Daten aufgefallen:
 
-Darüber hinaus müssen sowohl wirtschaftliche als auch praktische Rahmenbedingungen der Domäne berücksichtigt werden, da diese alle Phasen des Projekts beeinflussen.
+- Es gibt über 11.000 Einträge ohne product_id.
+- Manche Kombinationen aus transaction_id und product_id kommen mehrfach vor.
+- Die Labels sind sehr ungleich verteilt:
 
-## 2. Daten
+    . nur ca. 7.700 Betrugsfälle (1)
+    . ca. 178.000 normale Fälle (0)
+    . sehr viele unbekannte Fäalle(-1)
+Das zeigt, dass wir ein starkes Klassenungleichgewicht haben, was später beim Modell wichtig wird.
 
-### 2.1 Verfügbare Datenquellen
+### 2.3 Hauptrisiken und Datenvorbereitung
 
-Für das Projekt stehen verschiedene Datenquellen zur Verfügung, die zur Analyse von Scanvorgängen an Self-Checkout-Kassen genutzt werden können.
+Bei der Arbeit mit den Daten sind mehrere Herausforderungen zu beachten:
 
-Eine zentrale Datenquelle bilden Transaktionsdaten aus dem Einzelhandel, die Informationen über gescannte Produkte und den Ablauf einzelner Kaufvorgänge enthalten. Ergänzend dazu liegen Ergebnisse aus Stichprobenkontrollen vor, anhand derer festgestellt wurde, ob Scanvorgänge korrekt oder fehlerhaft waren. Diese Daten dienen insbesondere als Grundlage für das Training von Modellen.
+- Klassenungleichgewicht: Betrug kommt relativ selten vor, deshalb müssen passende Metriken gewählt werden (z. B. Recall oder Precision).
+- Fehlende `product_id`: Hier muss geprüft werden, warum diese fehlen und ob man sie ersetzen oder entfernen sollte.
+- Duplikate: Mehrfache Einträge müssen sinnvoll zusammengefasst werden
+- Zeitliche und filialspezifische Unterschiede: Daten können sich je nach Zeitraum oder Filiale unterscheiden.
+- Kameradaten: Diese könnten zusätzliche Informationen liefern, müssen aber erst auf Qualität geprüft werden.
 
-Darüber hinaus können Kameradaten zur Verfügung stehen, die zusätzliche Informationen über das Verhalten der Kundinnen und Kunden während des Scanvorgangs liefern können.
+### 2.4 Vorgehensweise für Vorbereitung, Training und Evaluation
 
-Die Trainingsdaten stammen aus Stichprobenkontrollen in verschiedenen Filialen aus den Jahren 2022 und 2023, während separate Testdaten aus den Jahren 2024 und 2025 bereitgestellt werden, um die Generalisierungsfähigkeit der entwickelten Modelle zu überprüfen.
+Für die weitere Arbeit planen wir folgendes Vorgehen:
 
-Die Bereitstellung und Nutzung der Daten erfolgt voraussichtlich über eine REST-API, wodurch eine standardisierte und flexible Anbindung an die entwickelten Analyseverfahren ermöglicht wird.
+- Datenbereinigung: fehlerhafte oder unvollständige Daten behandeln (z. B. fehlende IDs oder Duplikate)
 
-### 2.2 Mögliche Datenstruktur
+- Aggregation: statt einzelner Zeilen werden Merkmale auf Transaktionsebene gebildet (z. B. Gesamtpreis, Anzahl Produkte)
 
-Die bereitgestellten Daten lassen sich in mehrere miteinander verknüpfte Tabellen unterteilen, die unterschiedliche Aspekte des Einkaufsprozesses abbilden.
+- Feature Engineering: zusätzliche Merkmale erstellen, z. B. Zeit, Filiale oder Produktkategorien
 
-Die Tabelle „products“ enthält Informationen zu einzelnen Produkten, wie beispielsweise Preis, Kategorie, Gewicht sowie weitere produktspezifische Eigenschaften.
+- Umgang mit Labels:
+    1 = Betrug
+    0 = kein Betrug
+    -1 = unbekannt (wird entweder entfernt oder separat genutzt)
 
-Die Tabelle „stores“ beschreibt die Filialen, in denen die Transaktionen stattfinden, und umfasst unter anderem Standortinformationen sowie den Zeitpunkt der Einführung von Self-Checkout-Kassen.
+- Validierung: Aufteilung der Daten nach Zeit (Training auf älteren Daten, Test auf neueren Daten), um realistische Ergebnisse zu bekommen.
 
-Die Tabelle „transactions“ bildet die einzelnen Kaufvorgänge ab. Sie enthält Informationen wie den Gesamtbetrag, die Anzahl der gescannten Positionen sowie Zeitstempel für Beginn und Ende der Transaktion. Zudem ist ein Label enthalten, das angibt, ob eine Transaktion auffällig oder fehlerhaft ist.
+- Evaluation: Bewertung mit geeigneten Metriken wie Recall, Precision@k oder AUPRC, je nach Ziel.
 
-Die Tabelle „transaction_lines“ stellt die detaillierteste Ebene dar und enthält Informationen zu einzelnen gescannten Produkten innerhalb einer Transaktion. Dazu gehören unter anderem Zeitstempel, verkaufte Menge, Preis sowie Hinweise aus Kameradaten.
-
-Die verschiedenen Tabellen können über Schlüsselattribute miteinander verknüpft werden, insbesondere über „transaction_id“, „product_id“ und „store_id“. Dadurch ist es möglich, den gesamten Ablauf eines Einkaufs von der Filiale über die Transaktion bis hin zu einzelnen Produkten nachzuvollziehen.
-
-### 2.3 Erwartete Datenprobleme
-
-Im Rahmen der Datenanalyse sind verschiedene Herausforderungen zu erwarten.
-
-Ein zentrales Problem ist die mögliche Unausgewogenheit der Daten, da fehlerhafte oder betrügerische Transaktionen im Vergleich zu normalen Transaktionen nur einen kleinen Anteil ausmachen.
-
-Zudem können die Daten unvollständig oder verrauscht sein, beispielsweise durch fehlende Werte oder ungenaue Kamerainformationen.
-
-Ein weiteres Problem besteht in der Komplexität der Datenstruktur, da mehrere Tabellen miteinander verknüpft werden müssen, um aussagekräftige Analysen durchführen zu können.
-
-Darüber hinaus kann das Verhalten der Kundinnen und Kunden stark variieren, was die Erkennung von Mustern zusätzlich erschwert.
-
-Schließlich ist auch zu berücksichtigen, dass bestimmte Variablen, wie beispielsweise Kameradaten, Unsicherheiten enthalten können, die sich auf die Qualität der Analyse auswirken.
-
-### 2.4 Trainings- und Testdaten
+# Risiken und Einschränkungen, getroffene Annahmen:

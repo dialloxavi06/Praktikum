@@ -1,0 +1,309 @@
+Fakultät für Mathematik und Informatik
+
+Willkommen beim Projektpraktikum 
+„Data Science in der Anwendung“! 
+
+Auftaktveranstaltung am 01.04.2026
+
+Fakultät für Mathematik und Informatik
+Lehrgebiet Data Science /  Prof. Dr. Christian Beecks
+Sabine Folz-Weinstein
+
+Folie
+
+Fakultät für Mathematik und Informatik
+
+Agenda
+
+1. Allgemeines
+
+2. Timeline
+
+3. DASC-PM
+
+4. Aufgabenstellung
+
+5. Gruppeneinteilung
+
+6. Nächste Schritte
+
+7. Diskussion & Fragen
+
+Folie
+
+2
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+Fakultät für Mathematik und Informatik
+
+Allgemeines
+
+• Aufgabe aus dem Bereich Lebensmittel-Einzelhandel
+
+• Teamarbeit
+
+• Projektarbeit nach DASC-PM
+
+• Bewertung: 3 Säulen (Technisch-fachlich, Dokumentation, Präsentation)
+
+Folie
+
+3
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+Fakultät für Mathematik und Informatik
+
+Timeline
+
+01.04.2026
+
+Kick-off (alle)
+
+ca. 14-tägig
+
+Regelmäßige Zwischentermine:
+- Fragerunden, JourFixes, Tutorials
+- Präsentation und Abgabe von Artefakten je nach Projektphase
+
+→ selbständige Projektphasen-Planung gemäß DASC-PM !
+
+voraussichtlich
+15.07.2026
+
+Abschlusspräsentationen (alle)
+
+Folie
+
+4
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+DASC-PM
+
+
+
+Erfassung, Speicherung und Verwaltung 
+geeigneter Daten(quellen)
+Explorative Datenanalyse
+
+
+ Analytische Datenquelle
+
+Fakultät für Mathematik und Informatik
+
+
+
+Domänenspezifisches Problem löst Use-Case-
+Entwicklung aus
+Ausgestaltung einer Data-Science Projektskizze
+
+
+ Projektskizze
+
+
+
+Anwendung bestehender oder Entwicklung 
+neuer Datenanalyseverfahren
+
+ Methodische und fachliche Evaluation
+ Analyseergebnis
+
+
+
+Verwendung der Analyseartefakte in der Domäne 
+durch Domänen-/Anwendungsexperten
+
+Überwachung durch Monitoring 
+ Erkenntnisse (auch für Weiter- und 
+
+Neuentwicklung)
+
+
+
+Analyseergebnisse werden in eine anwendbare Form 
+für die Domäne vorbereitet
+
+Technische, methodische und fachliche Prüfung
+ Analyseartefakte (Modelle/Verfahren/Systeme)
+
+Folie
+
+5
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+M. Schulz et al.: DASC-PM v1.1 – Ein Vorgehensmodell für Data-Science-Projekte. NORDAKADEMIE gAG Hochschule der Wirtschaft. 2022.
+
+DASC-PM
+
+Fakultät für Mathematik und Informatik
+
+Folie
+
+6
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+M.Schulz et al.: DASC-PM v1.1 - Ein Vorgehensmodell für Data-Science-Projekte. NORDAKADEMIE gAG Hochschule der Wirtschaft. 2022.
+
+DASC-PM
+
+Fakultät für Mathematik und Informatik
+
+Folie
+
+7
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+M.Schulz et al.: DASC-PM v1.1 - Ein Vorgehensmodell für Data-Science-Projekte. NORDAKADEMIE gAG Hochschule der Wirtschaft. 2022.
+
+Fakultät für Mathematik und Informatik
+
+Aufgabenstellung
+
+Betrug/“Schwund“ an Self-Checkout-Kassen
+
+Studierende:
+
+Datenanalyse-StartUps
+
+Kursbetreuung:
+
+Einzelhandelskette
+(Auftraggeber)
+
+Bildquelle: https://www.glory-global.com/de-de/blogs/de_de/2019/self-checkout-kassen/
+
+Folie
+
+8
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+Fakultät für Mathematik und Informatik
+
+Aufgabenstellung
+
+• Nicht alle Waren werden von den Kunden erfasst!
+
+• Gründe: Absicht, Versehen, technische Probleme
+
+• Empirische Untersuchungen: ca. 5% der Scans sind inkorrekt
+
+•
+
+zielgerichtete Nachkontrollen bei verdächtigen Scanvorgängen
+
+• Checks so gering wie möglich (Kosten, Kundenverärgerung) <-> möglichst viele Falschscans finden
+
+• Trainingsdaten aus Stichprobenkontrollen in verschiedenen Filialen (2022/23), Testdaten (2024/25)
+
+• Kameradaten
+
+• Nutzbarmachung: via REST API
+
+• Weitere Informationen zur technischen Umsetzung (git, uv,…) folgen
+
+ Erwartetes Ergebnis: Modell (Code) UND Datenexploration/Analyse/Interpretation/Empfehlungen
+
+Folie
+
+9
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+Fakultät für Mathematik und Informatik
+
+Teilnehmende
+
+Kursbetreuung FernUni:
+• Sabine Folz-Weinstein
+• Max Pernklau
+• Prof. Dr. Christian Beecks
+
+Gruppeneinteilung:
+
+• Team 1:  Maik Friedrich, Jan Herschel, Rama Shaieb
+
+• Team 2:  Salah Abuzaina, Johanna Kröner, Jochen Weber
+
+• Team 3:  Michael Bjeski, Sandra Kreuß, Yannick Mählmann
+
+• Team 4:  Mamadou Diallo, Ben Luca Kröncke, Marius Schneider, Ronja Thum
+
+Folie
+
+10
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+Fakultät für Mathematik und Informatik
+
+Nächste Schritte
+
+• Projektskizze nach DASC-PM → 20./22.4.26
+
+ Abgleich: Erwartungen und Ziele des Kunden / Leistungen des Auftragnehmers
+
+ Ausgangslage: Daten, Domäne
+
+
+
+
+
+Schritte zur Problemlösung, Vorgehensweise
+
+Teilaufgaben in den einzelnen Phasen, Projektplan
+
+ Risiken und Einschränkungen, getroffene Annahmen
+
+ Offene Punkte
+
+• Zugang zu Daten morgen per e-Mail
+
+• Offene Fragerunde Do 9.4.26 17:00
+
+• Technische Vorgaben folgen → projektpraktikum.de (Fernuni-Zugangsdaten)
+
+Folie
+
+11
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+Diskussion & Fragen
+
+Fakultät für Mathematik und Informatik
+
+Folie
+
+12
+
+01.04.2026
+
+Sabine Folz-Weinstein – Lehrgebiet Data Science
+
+

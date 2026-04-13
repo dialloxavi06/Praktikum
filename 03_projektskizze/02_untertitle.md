@@ -1,123 +1,95 @@
-# Ausgangslage: Daten und Domäne
-
-## 1. Domäne (Kurzfassung)
-
-Im Lebensmitteleinzelhandel werden immer häufiger Self-Checkout-Kassen eingesetzt. Dabei scannen Kundinnen und Kunden ihre Produkte selbst, ohne dass direkt Personal eingreift. Das macht den Einkauf schneller und bequemer, bringt aber auch Probleme mit sich: Manche Artikel werden falsch oder gar nicht gescannt – entweder aus Versehen oder absichtlich.
-
-Dadurch entsteht ein Zielkonflikt. Einerseits möchte man möglichst viele Fehler und Betrugsfälle erkennen. Andererseits sollen die Kundinnen und Kunden nicht durch zu viele Kontrollen gestört werden. Ziel des Projekts ist es deshalb, mithilfe von Daten gezielt zu entscheiden, welche Transaktionen überprüft werden sollten, um die Kontrollen effizienter zu machen.
+# Ausgangslage: Daten
 
 ---
 
-## 2. Daten — wichtige Erkenntnisse
+## Verfügbare Datenquellen
 
-### 2.1 Verfügbare Tabellen und Formate
+Die Daten wurden in zwei Formaten bereitgestellt:
 
-Für die Analyse stehen mehrere Tabellen zur Verfügung, die unterschiedliche Aspekte der Daten abdecken:
+Vier Parquet-Dateien
+Eine konsolidierte DuckDB-Datenbank (data.duckdb)
 
-- `products`: Informationen zu Produkten (z. B. Preis, Kategorie, Gewicht)  
-- `stores`: Informationen zu den Filialen  
-- `transactions`: beschreibt einzelne Einkäufe (z. B. Gesamtbetrag, Anzahl Produkte, Zeit, Label)  
-- `transaction_lines`: einzelne Positionen innerhalb einer Transaktion  
+Beide Formate enthalten identische Tabellen.
+Die DuckDB-Datei fasst die Parquet-Dateien lediglich zu einer integrierten, performanten Datenbank zusammen.
+Das Projektteam kann frei entscheiden, welches Format für die weitere Analyse verwendet wird.
+Enthaltene Tabellen
 
-Die Daten liegen als Parquet-Dateien vor und wurden im Notebook mit DuckDB analysiert.
-
----
-
-### 2.2 Kennzahlen aus der Voranalyse
-
-Die erste Analyse zeigt folgende Größenordnungen:
-
-- Gesamtanzahl Transaktionen: 1.864.116  
-- Gesamtanzahl `transaction_lines`: 20.092.938  
-- Anzahl Produkte: 23.896  
-- Anzahl Filialen: 50  
-
-Zusätzlich sind einige Auffälligkeiten in den Daten zu sehen:
-
-- Fehlende `product_id` in `transaction_lines`: 11.453 (~0,06 %)  
-- Duplikate für (`transaction_id`, `product_id`) treten auf (mehrfache Positionseinträge)  
-- Labelverteilung (`transactions.label`):  
-  - `1` (Betrug): 7.726 (≈ 0,41 %)  
-  - `0` (kein Betrug): 178.359 (≈ 9,57 %)  
-  - `-1` (unbekannt): 1.678.031 (≈ 90,02 %)  
-
-Diese Verteilung zeigt ein starkes Klassenungleichgewicht, da Betrugsfälle nur einen sehr kleinen Anteil ausmachen.
+products – Produktinformationen (Preis, Kategorie, Gewicht usw.)
+stores – Filialinformationen
+transactions – vollständige Transaktionen inkl. Label
+transaction_lines – gescannte Artikelpositionen
 
 ---
 
-### 2.3 Hauptrisiken und erste Überlegungen
+## Kennzahlen aus der Voranalyse
 
-Bei der Arbeit mit den Daten sind einige Herausforderungen zu beachten:
+Im Rahmen einer ersten strukturellen Durchsicht der bereitgestellten Daten ergaben sich folgende zentrale Beobachtungen:
 
-- **Ungleich verteilte Labels:**  
-  Betrug kommt selten vor. Ein Modell könnte daher dazu tendieren, fast nur normale Fälle vorherzusagen.  
-  → Deshalb sollten geeignete Bewertungsmetriken gewählt werden (z. B. Precision oder Recall).
+### 1. Datenumfang und Standortabdeckung
 
-- **Fehlende `product_id`:**  
-  Ohne Produktinformationen fehlen wichtige Details.  
-  → Es muss geprüft werden, ob diese Werte ersetzt, markiert oder entfernt werden.
+Insgesamt stehen Daten aus 50 Filialen zur Verfügung.
+Da unklar ist, wie viele Filialen die Einzelhandelskette insgesamt betreibt, ist die Repräsentativität der Daten derzeit nicht eindeutig bewertbar.
+→ Dies wird im Austausch mit Domänenexpertinnen und -experten weiter geklärt.
 
-- **Duplikate:**  
-  Mehrfache Einträge können aggregierte Werte verfälschen.  
-  → Vor der weiteren Analyse sollten diese sinnvoll zusammengefasst werden.
+### 2. Überblick über Datenmengen
 
-- **Zeitliche und filialspezifische Unterschiede:**  
-  Daten können sich je nach Filiale oder Zeitraum unterscheiden.  
-  → Das sollte bei der späteren Analyse berücksichtigt werden.
+Transaktionen: ca. 1,86 Mio.
+Scanpositionen (transaction_lines): ca. 20 Mio.
+Produkte: ca. 24.000
 
-- **Kameradaten:**  
-  Zusätzliche Informationen sind vorhanden, aber deren Qualität ist noch unklar.  
-  → Nutzung erst nach Prüfung sinnvoll.
+### 3. Labelverteilung und aktuelle Annahme der Zielgröße
 
----
+Da keine offizielle Dokumentation zu den Labels vorliegt, wurde ihre Bedeutung anhand der Datenverteilung interpretiert.
 
-### 2.4 Vorgehensweise (erste Planung)
+Nur ca. 10 % aller Transaktionen besitzen ein aussagekräftiges Label (0 oder 1).
+Davon sind rund 5 % als auffällig (1) gekennzeichnet.
+Etwa 90 % der Transaktionen tragen das Label –1 (unbekannt / nicht geprüft).
 
-Für die nächsten Schritte planen wir ein einfaches und schrittweises Vorgehen:
+Arbeitsannahme (wird später validiert):
 
-1. **Erste Datenprüfung**  
-   - Überblick über Datenmengen und Struktur  
-   - Auffälligkeiten identifizieren (fehlende Werte, Duplikate)
+1 → bestätigte Auffälligkeit / fehlerhafter Scan
+0 → geprüfte und unauffällige Transaktion
+–1 → unbekannter oder nicht geprüfter Status
 
-2. **Datenbereinigung**  
-   - Umgang mit fehlenden `product_id` klären  
-   - Duplikate bereinigen oder zusammenfassen  
+Diese Verteilung weist auf ein extrem unausgeglichenes Klassifikationsproblem hin.
 
-3. **Aggregation auf Transaktionsebene**  
-   - Bildung einfacher Kennzahlen wie:  
-     - Anzahl Produkte  
-     - Gesamtbetrag  
-     - Durchschnittspreis  
+### 4. Datenqualität
 
-4. **Erste Feature-Ideen**  
-   - Zeitliche Merkmale (z. B. Tageszeit, Wochentag)  
-   - Filialbezogene Merkmale  
-   - Einfache Verhaltensindikatoren (z. B. stornierte Produkte)
+Fehlende Werte: ca. 11.000 Positionen ohne product_id
+Duplikate: vereinzelt doppelte (transaction_id, product_id)‑Kombinationen
+Mögliche Filial- oder Zeitabhängigkeit: Unterschiede zwischen Standorten oder Zeiträumen müssen untersucht werden.
 
-5. **Vorbereitung der späteren Analyse**  
-   - Aufteilung der Daten nach Zeit (ältere Daten vs. neuere Daten)  
-   - Auswahl geeigneter Bewertungsmetriken  
+### 5. Unklare bzw. domänenspezifische Attribute
+
+Einige Felder sind inhaltlich nicht eindeutig interpretierbar und erfordern Rücksprache mit Domänenexpertinnen und -experten:
+
+camera_product_similar
+camera_certainty
+urbanization
+popularity
+
+Diese Variablen können potenziell für die spätere Modellierung relevant sein, ihre Bedeutung muss jedoch zunächst eindeutig geklärt werden.
 
 ---
 
-### Erste, konkrete To-Dos
+## Aufbereitungsschritte
 
-- Analyse der 11.453 Zeilen ohne `product_id` (z. B. nach Filiale oder Zeitraum)  
-- Bestimmung der Anzahl betroffener Transaktionen durch Duplikate  
-- Aufbau einer ersten aggregierten Tabelle auf Transaktionsebene  
-- Erste einfache Kennzahlen pro Filiale berechnen  
+Die Phase der Datenbereitstellung umfasst:
 
----
+Strukturelle Prüfung der Tabellen (Parquet oder DuckDB)
+Bereinigung
 
-## 3. Problemeskizze
+fehlende Werte
+Duplikate
+inkonsistente Einträge
 
-Ziel des Projekts ist es, ein datengetriebenes Modell zu entwickeln, das dabei hilft zu entscheiden, welche Transaktionen an Self-Checkout-Kassen kontrolliert werden sollten.
+Zusammenführung zu einer konsistenten analytischen Datenbasis
+Erste Aggregationen, z. B.:
 
-Für jede Transaktion soll geschätzt werden, wie wahrscheinlich ein fehlerhafter oder betrügerischer Scanvorgang ist. Auf dieser Basis können gezielt nur die auffälligsten Transaktionen überprüft werden.
+Artikelanzahl pro Transaktion
+Gesamtsumme
+zeitliche Merkmale
 
-Dabei sollen zwei Ziele gleichzeitig erreicht werden:
+Dokumentation aller Annahmen und Bereinigungsschritte
 
-- möglichst viele Betrugsfälle erkennen  
-- gleichzeitig die Anzahl der Kontrollen gering halten  
-
-Aus technischer Sicht handelt es sich um ein Klassifikationsproblem mit stark unausgeglichenen Klassen.
+Ergebnis: ein bereinigter, strukturierter und modellierungsfähiger Datensatz für die Analysephase.
